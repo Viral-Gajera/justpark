@@ -1,23 +1,47 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 export default function Navbar() {
     return (
-        <nav className="fixed top-0 flex justify-between w-[calc(100vw)] px-10 py-2 text-white bg-opacity-90 bg-c1">
+        <nav className="fixed top-0 flex justify-between w-full px-10 py-5 text-white bg-opacity-90 bg-c1">
             <div className="text-xl font-bold">JustPark</div>
-            <div className="items-center hidden gap-5 text-sm sm:flex">
-                <Link to="/" className="hover:text-gray-400">
+            <div className="flex items-center gap-5 text-base">
+                <NavLink
+                    to="/"
+                    className="hover:text-gray-400"
+                    style={({ isActive }) => ({
+                        borderBottom: isActive ? "2px solid white" : "",
+                    })}
+                >
                     Home
-                </Link>
-                <Link to="/manage-space" className="hover:text-gray-400">
+                </NavLink>
+                <NavLink
+                    to="/manage-space"
+                    className="hover:text-gray-400"
+                    style={({ isActive }) => ({
+                        borderBottom: isActive ? "2px solid white" : "",
+                    })}
+                >
                     Manage Space
-                </Link>
-                <Link to="/rent-space" className="hover:text-gray-400">
+                </NavLink>
+                <NavLink
+                    to="/rent-space"
+                    className="hover:text-gray-400"
+                    style={({ isActive }) => ({
+                        borderBottom: isActive ? "2px solid white" : "",
+                    })}
+                >
                     Rent Space
-                </Link>
-                <Link to="/admin" className="hover:text-gray-400">
+                </NavLink>
+                <NavLink
+                    to="/admin"
+                    className="hover:text-gray-400"
+                    style={({ isActive }) => ({
+                        borderBottom: isActive ? "2px solid white" : "",
+                    })}
+                >
                     Admin
-                </Link>
+                </NavLink>
             </div>
         </nav>
     );

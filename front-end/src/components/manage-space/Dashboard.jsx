@@ -28,16 +28,8 @@ export default function Dashboard() {
     const gc = useContext(GlobalContext);
     const navigate = useNavigate();
 
-    const [items, setItems] = useState([
-        {
-            id: 1,
-            group: 1,
-            title: "Loading...",
-            start_time: moment(),
-            end_time: moment().add(1, "hour"),
-        },
-    ]);
-    const [groups, setGroups] = useState([{ id: 1, title: "Loading..." }]);
+    const [items, setItems] = useState([]);
+    const [groups, setGroups] = useState([{ id: 1, title: "Spot 1" }]);
     const [rentDetails, setRentDetails] = useState([]);
     const [totalBokingHours, setTotalBokingHours] = useState(0);
 
@@ -51,6 +43,17 @@ export default function Dashboard() {
         }
 
         (async function () {
+            let groupsTemp = [];
+
+            for (let i = 0; i < gc?.manageSpace?.maxSpace; i++) {
+                groupsTemp.push({
+                    id: i,
+                    title: `Spot ${i + 1}`,
+                });
+            }
+
+            setGroups(groupsTemp);
+
             let res = await fetchData(
                 "POST",
                 "/api/manage-space/get-rent-details",
@@ -63,17 +66,6 @@ export default function Dashboard() {
 
             setRentDetails(res?.data);
 
-            let groupsTemp = [];
-
-            for (let i = 0; i < gc?.manageSpace?.maxSpace; i++) {
-                groupsTemp.push({
-                    id: i,
-                    title: `Spot ${i + 1}`,
-                });
-            }
-
-            setGroups(groupsTemp);
-
             let itemsTemp = [];
 
             setTotalBokingHours(0);
@@ -82,7 +74,17 @@ export default function Dashboard() {
                 itemsTemp.push({
                     id: i + 1,
                     group: res?.data[i]?.spotIndex,
-                    title: i + 1,
+                    title: (
+                        <div
+                            onClick={() => {
+                                alert("Detail logged into console");
+                                console.log(res?.data[i]);
+                            }}
+                            title="Vechile No, Click to show more details"
+                        >
+                            {res?.data[i]?.vehicleNo}
+                        </div>
+                    ),
                     start_time: Date.parse(res?.data[i]?.from),
                     end_time: Date.parse(res?.data[i]?.to),
                     ...commonAttr,
@@ -91,9 +93,12 @@ export default function Dashboard() {
                 setTotalBokingHours((old) => {
                     return (
                         old +
-                        moment(res?.data[i]?.to).diff(
-                            moment(res?.data[i]?.from),
-                            "hours"
+                        Number(
+                            (
+                                (Date.parse(res?.data[i]?.to) -
+                                    Date.parse(res?.data[i]?.from)) /
+                                (1000 * 60 * 60)
+                            ).toFixed(2)
                         )
                     );
                 });
@@ -153,8 +158,10 @@ export default function Dashboard() {
                                 Total Earning
                             </div>
                             <div className="text-lg font-semibold">
-                                {totalBokingHours *
-                                    gc?.manageSpace?.ratePerHour}
+                                {(
+                                    totalBokingHours *
+                                    gc?.manageSpace?.ratePerHour
+                                ).toFixed(2)}
                                 /-
                             </div>
                         </div>

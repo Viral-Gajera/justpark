@@ -13,7 +13,27 @@ export default function Login() {
 
     const [formDetails, setFormDetails] = React.useState({});
 
+    function validate() {
+        const emailRegex = /^[a-zA-Z0-9.]+@[a-zA-Z0-9.]+\.[a-zA-Z]{2,4}$/;
+
+        if (!formDetails.email) {
+            toast.error("Email is required");
+            return false;
+        }
+        if (!emailRegex.test(formDetails.email)) {
+            toast.error("Invalid Email");
+            return false;
+        }
+        if (!formDetails.password) {
+            toast.error("Password is required");
+            return false;
+        }
+        return true;
+    }
+
     async function handlerLogin() {
+        if (!validate()) return;
+
         let res = await fetchData("POST", "/api/admin/login", {
             ...formDetails,
         });
@@ -23,7 +43,7 @@ export default function Login() {
             gc.setManageSpacePending(res.data);
             navigate("dashboard");
         } else {
-            toast.error(res.message);
+            toast.error(res?.message);
         }
     }
 

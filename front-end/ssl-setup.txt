@@ -1,0 +1,7 @@
+openssl req -nodes -new -x509 -keyout server.key -out server.cert -config "C:/Program Files/OpenSSL-Win64/bin/cnf/openssl.cnf"
+
+Common Name (e.g., server FQDN or YOUR name): 192.168.35.22
+
+HTTPS=true 
+SSL_CRT_FILE=server.cert 
+SSL_KEY_FILE=server.key 

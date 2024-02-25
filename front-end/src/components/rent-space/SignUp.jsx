@@ -12,7 +12,45 @@ export default function SignUp() {
     const navigate = useNavigate();
     const gc = useContext(GlobalContext);
 
+    function validate() {
+        const fullNameReg = /^[A-Za-z]+\s[A-Za-z]+$/;
+        const phoneNoReg = /^[0-9]{10}$/;
+        const emailReg = /^[a-zA-Z0-9.]+@[a-zA-Z0-9.]+\.[a-zA-Z]{2,4}$/;
+
+        if (!formDetails.fullName) {
+            toast.error("Please Enter Full Name");
+            return false;
+        }
+        if (!fullNameReg.test(formDetails.fullName)) {
+            toast.error("Please Enter a valid Full Name");
+            return false;
+        }
+        if (!formDetails.phoneNo) {
+            toast.error("Please Enter Phone Number");
+            return false;
+        }
+        if (!phoneNoReg.test(formDetails.phoneNo)) {
+            toast.error("Please Enter a valid Phone Number");
+            return false;
+        }
+        if (!formDetails.email) {
+            toast.error("Please Enter Email");
+            return false;
+        }
+        if (!emailReg.test(formDetails.email)) {
+            toast.error("Please Enter a valid Email Address");
+            return false;
+        }
+        if (!formDetails.password) {
+            toast.error("Please Enter Password");
+            return false;
+        }
+        return true;
+    }
+
     async function handlerSubmit() {
+        if (!validate()) return;
+
         // Sending Form Details
         let res = await fetchData("POST", "/api/rent-space/add-user", {
             ...formDetails,
@@ -24,6 +62,14 @@ export default function SignUp() {
             gc?.setRentSpace({
                 ...res.data,
             });
+        }
+
+        if (!res?.isSuccess) {
+            if (res.message === "duplicate_email") {
+                toast.error(
+                    "Email already exists. Please try with another email address."
+                );
+            }
         }
     }
 

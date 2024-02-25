@@ -45,6 +45,19 @@ async function addUser(req, res) {
         }
     }
 
+    const existingUser = await query(
+        "SELECT * FROM space_provider WHERE email = ?;",
+        [req.body.email]
+    );
+
+    if (existingUser.length > 0) {
+        // If the email already exists, send a duplicate_email response
+        return res.json({
+            isSuccess: false,
+            message: "duplicate_email",
+        });
+    }
+
     let result = await query(
         "INSERT INTO space_provider (fullName, spaceName, email, password, phoneNo, latitude, longitude, `from`, `to`, maxSpace, ratePerHour, fileUrls, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
         [

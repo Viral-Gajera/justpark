@@ -59,7 +59,7 @@ export default function Dashboard() {
     }
 
     return (
-        <section className="mt-[60px]">
+        <section className="mt-[80px]">
             {/* Table */}
             <div className="m-5 border rounded">
                 <div className="overflow-x-auto">

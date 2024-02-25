@@ -138,7 +138,7 @@ export default function Map(props) {
     }
 
     return (
-        <div className="w-[70%] h-[85%] flex flex-col items-center justify-center gap-5 p-5 bg-white rounded-lg">
+        <div className="relative z-10 w-[96%] h-[96%] flex flex-col items-center justify-center gap-5 p-5 bg-white rounded-lg">
             {/* <h1 className="text-xl font-bold">Location</h1> */}
             <div className="flex flex-col w-full gap-2 lg:gap-3 lg:flex-row">
                 <input
@@ -163,11 +163,14 @@ export default function Map(props) {
             </div>
             <div className="w-full h-[90%] border rounded" ref={mapRef}></div>
 
-            <a href="#image" className="block w-full">
+            <div
+                onClick={() => props.scrollTo("image")}
+                className="block w-full"
+            >
                 <Button className="w-full py-[10px] text-white rounded-lg bg-c3 font-bold">
                     Next
                 </Button>
-            </a>
+            </div>
         </div>
     );
 }

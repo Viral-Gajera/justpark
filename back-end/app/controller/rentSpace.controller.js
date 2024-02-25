@@ -23,9 +23,11 @@ async function login(req, res) {
 }
 
 async function getMarker(req, res) {
+    console.log(req.body);
+
     let result = await query(
-        "SELECT * FROM space_provider WHERE (ABS(latitude - ?) < 0.3 OR ABS(longitude - ?) < 0.3) AND status = 1;",
-        [req.body.latitude, req.body.longitude]
+        "SELECT * FROM space_provider WHERE (ABS(latitude - ?) < 0.3 OR ABS(longitude - ?) < 0.3) AND status = 1 AND TIME(STR_TO_DATE(?, '%Y-%m-%dT%H:%i')) >= `from` AND TIME(STR_TO_DATE(?, '%Y-%m-%dT%H:%i')) <= `to`;",
+        [req.body.latitude, req.body.longitude, req.body.from, req.body.to]
     );
 
     let filterted = await filterMarker(result);
@@ -78,6 +80,19 @@ async function getMarker(req, res) {
 }
 
 async function addUser(req, res) {
+    const existingUser = await query(
+        "SELECT * FROM space_renter WHERE email = ?;",
+        [req.body.email]
+    );
+
+    if (existingUser.length > 0) {
+        // If the email already exists, send a duplicate_email response
+        return res.json({
+            isSuccess: false,
+            message: "duplicate_email",
+        });
+    }
+
     let result = await query(
         "INSERT INTO space_renter (userName, email, password, phoneNo) VALUES (?, ?, ?, ?);",
         [req.body.fullName, req.body.email, req.body.password, req.body.phoneNo]

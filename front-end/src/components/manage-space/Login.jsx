@@ -19,7 +19,27 @@ export default function Login() {
         }
     }, []);
 
+    function validate() {
+        const emailRegex = /^[a-zA-Z0-9.]+@[a-zA-Z0-9.]+\.[a-zA-Z]{2,4}$/;
+
+        if (!formDetails.email) {
+            toast.error("Email is required");
+            return false;
+        }
+        if (!emailRegex.test(formDetails.email)) {
+            toast.error("Invalid Email");
+            return false;
+        }
+        if (!formDetails.password) {
+            toast.error("Password is required");
+            return false;
+        }
+        return true;
+    }
+
     async function handlerLogin() {
+        if (!validate()) return;
+
         let res = await fetchData("POST", "/api/manage-space/login", {
             ...formDetails,
         });
@@ -29,15 +49,23 @@ export default function Login() {
             gc.setManageSpace(res.data);
             navigate("dashboard");
         } else {
-            toast.error(res.message);
+            toast.error(res?.message);
         }
     }
 
     return (
-        <section className=" h-[100vh] bg-1 bg-c1">
+        <section className="h-[100vh] bg-1 bg-c1">
             <div className="flex items-center justify-center w-full h-full">
                 <div className="flex flex-col items-center justify-center gap-5 [&_input]:w-[350px] bg-white p-5 py-10 rounded-lg">
-                    <h1 className="text-xl font-bold">Login</h1>
+                    <div className="w-full text-center">
+                        <h1 className="relative z-10 text-xl font-bold">
+                            Login
+                        </h1>
+                        {/* <div className="translate-y-[15px] border-[1px] border-gray-100"></div> */}
+                        <h1 className="relative inline-block px-3 text-xs text-gray-300 bg-white">
+                            Manage Space
+                        </h1>
+                    </div>
                     <input
                         type="text"
                         placeholder="Email Address"

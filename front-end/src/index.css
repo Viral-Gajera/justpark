@@ -2,6 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    font-size: 16px;
+
+    @media (max-width: 768px) {
+        font-size: 12px;
+    }
+}
+
+.app {
+    /* DISABLE SELECTION */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Standard */
+
+    /* DISABLE BLUE HIGHLIGHT WHEN CLICK [FOR MOBILE CHROME] */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.app:focus {
+    outline: none !important;
+}
+
 .bg-1 {
     background-image: url("./images/hero-bg.png");
 }

@@ -17,6 +17,7 @@ export default function SignUp() {
     const [formDetails, setFormDetails] = useState({});
     const [latitude, setLatitude] = useState();
     const [longitude, setLongitude] = useState();
+    const [disableSubmit, setDisableSubmit] = useState(false);
 
     const [readOnly, setReadOnly] = useState(false);
     const [edit, setEdit] = useState(false);
@@ -37,7 +38,75 @@ export default function SignUp() {
         }
     }, []);
 
-    function validation() {
+    function validatePersonalDetails() {
+        const fullNameReg = /^[A-Za-z]+\s[A-Za-z]+$/;
+        const phoneNoReg = /^[0-9]{10}$/;
+        const emailReg = /^[a-zA-Z0-9.]+@[a-zA-Z0-9.]+\.[a-zA-Z]{2,4}$/;
+
+        if (!formDetails.fullName) {
+            toast.error("Please Enter Full Name");
+            return false;
+        }
+        if (!fullNameReg.test(formDetails.fullName)) {
+            toast.error("Please Enter a valid Full Name");
+            return false;
+        }
+        if (!formDetails.phoneNo) {
+            toast.error("Please Enter Phone Number");
+            return false;
+        }
+        if (!phoneNoReg.test(formDetails.phoneNo)) {
+            toast.error("Please Enter a valid Phone Number");
+            return false;
+        }
+        if (!formDetails.email) {
+            toast.error("Please Enter Email");
+            return false;
+        }
+        if (!emailReg.test(formDetails.email)) {
+            toast.error("Please Enter a valid Email Address");
+            return false;
+        }
+        if (!formDetails.password) {
+            toast.error("Please Enter Password");
+            return false;
+        }
+        if (!formDetails.spaceName) {
+            toast.error("Please Enter Space Name");
+            return false;
+        }
+        return true;
+    }
+
+    function validateSpaceDetails() {
+        if (!validatePersonalDetails()) return;
+
+        if (!formDetails.from) {
+            toast.error("Please Enter From time");
+            return false;
+        }
+        if (!formDetails.to) {
+            toast.error("Please Enter To time");
+            return false;
+        }
+        if (formDetails.from === formDetails.to) {
+            toast.error("From Time and To Time can not be same");
+            return false;
+        }
+        if (!formDetails.maxSpace) {
+            toast.error("Please Enter Max Space");
+            return false;
+        }
+        if (!formDetails.ratePerHour) {
+            toast.error("Please Enter Rate Per Hour");
+            return false;
+        }
+        return true;
+    }
+
+    function validateLocation() {
+        if (!validateSpaceDetails()) return;
+
         if (!latitude || !longitude) {
             toast.error("Please select location");
             return false;
@@ -45,17 +114,29 @@ export default function SignUp() {
         return true;
     }
 
+    function scrollTo(id) {
+        let a = document.createElement("a");
+        a.href = `#${id}`;
+
+        if (id === "space-details" && !validatePersonalDetails()) return;
+        if (id === "location" && !validateSpaceDetails()) return;
+        if (id === "image" && !validateLocation()) return;
+
+        a.click();
+    }
+
     async function handlerSubmit(e) {
         e.preventDefault();
+        setDisableSubmit(true);
 
         if (readOnly) {
             navigate("/manage-space/dashboard");
             return;
         }
 
-        let files = e.target[0].files;
+        if (!validateLocation()) return;
 
-        if (!validation()) return;
+        let files = e.target[0].files;
 
         if (!files.length) {
             toast.error("Please select image file");
@@ -68,25 +149,39 @@ export default function SignUp() {
             formData.append("file", files[i]);
         }
 
-        let response = await fetch(
-            `${process.env.REACT_APP_BASEURL}/api/upload`,
-            {
-                method: "POST",
-                body: formData,
-            }
-        );
+        let response = fetch(`${process.env.REACT_APP_BASEURL}/api/upload`, {
+            method: "POST",
+            body: formData,
+        });
+
+        toast.promise(response, {
+            loading: "Sending data to backend",
+            success: "Data sent to backend!",
+            error: "Soming went wrong while sending data to backend",
+        });
+        response = await response;
         response = await response.json();
 
-        if (!response?.isSuccess) return;
+        if (!response?.isSuccess) {
+            setDisableSubmit(false);
+            return;
+        }
 
         // Sending Form Details
-        let res = await fetchData("POST", "/api/manage-space/add-user", {
+        let res = fetchData("POST", "/api/manage-space/add-user", {
             ...formDetails,
             fileUrls: response.data.fileUrl,
             latitude,
             longitude,
             edit,
         });
+
+        toast.promise(res, {
+            loading: "Analysing data",
+            success: "Data analysed",
+            error: "Soming went wrong while analysing data",
+        });
+        res = await res;
 
         if (res?.isSuccess) {
             toast.success("Account created successfully");
@@ -96,6 +191,20 @@ export default function SignUp() {
                 status: 0,
             });
         }
+
+        if (!res?.isSuccess) {
+            if (res.message === "duplicate_email") {
+                toast.error(
+                    "Email already exists. Please try with another email address.",
+                    {
+                        duration: 15000,
+                    }
+                );
+                scrollTo("personal-details");
+            }
+        }
+
+        setDisableSubmit(false);
     }
 
     return (
@@ -111,7 +220,7 @@ export default function SignUp() {
                         <input
                             type="text"
                             placeholder="Full Name"
-                            className="w-full max-w-xs input input-bordered"
+                            className="max-w-xs min-w-full input input-bordered"
                             value={formDetails.fullName}
                             onChange={(e) =>
                                 setFormDetails({
@@ -124,7 +233,7 @@ export default function SignUp() {
                         <input
                             type="number"
                             placeholder="Phone No"
-                            className="w-full max-w-xs input input-bordered"
+                            className="max-w-xs min-w-full input input-bordered"
                             value={formDetails.phoneNo}
                             onChange={(e) =>
                                 setFormDetails({
@@ -138,7 +247,7 @@ export default function SignUp() {
                         <input
                             type="text"
                             placeholder="Email Address"
-                            className="w-full max-w-xs input input-bordered"
+                            className="max-w-xs min-w-full input input-bordered"
                             value={formDetails.email}
                             onChange={(e) =>
                                 setFormDetails({
@@ -151,7 +260,7 @@ export default function SignUp() {
                         <input
                             type="password"
                             placeholder="Password"
-                            className="w-full max-w-xs input input-bordered"
+                            className="max-w-xs min-w-full input input-bordered"
                             value={formDetails.password}
                             onChange={(e) =>
                                 setFormDetails({
@@ -165,7 +274,7 @@ export default function SignUp() {
                         <input
                             type="text"
                             placeholder="Space Name"
-                            className="min-w-full col-span-2 border input input-bordered"
+                            className="min-w-full border md:col-span-2 input input-bordered"
                             value={formDetails.spaceName}
                             onChange={(e) =>
                                 setFormDetails({
@@ -176,11 +285,14 @@ export default function SignUp() {
                             readOnly={readOnly}
                         />
                     </div>
-                    <a href="#space-details" className="block w-full">
+                    <div
+                        onClick={() => scrollTo("space-details")}
+                        className="block w-full"
+                    >
                         <Button className="w-full py-[10px] text-white rounded-lg bg-c3 font-bold">
                             Next
                         </Button>
-                    </a>
+                    </div>
                 </div>
             </div>
 
@@ -189,15 +301,15 @@ export default function SignUp() {
                 className="flex items-center justify-center w-full h-full scroll-child"
                 id="space-details"
             >
-                <div className="flex flex-col items-center justify-center gap-5 [&_input]:w-[350px] bg-white p-5 py-10 rounded-lg">
+                <div className="flex flex-col items-center justify-center gap-5 [&_input]:w-[320px] bg-white p-5 py-10 rounded-lg">
                     <h1 className="text-xl font-bold">Space details</h1>
-                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-5 p-1 md:grid-cols-2">
                         <label htmlFor="" className="flex flex-col">
                             <div className="mb-1 ml-1">From</div>
                             <input
                                 type="time"
                                 placeholder="Full Name"
-                                className="w-full max-w-xs input input-bordered"
+                                className="input input-bordered"
                                 value={formDetails.from}
                                 onChange={(e) =>
                                     setFormDetails({
@@ -213,7 +325,7 @@ export default function SignUp() {
                             <input
                                 type="time"
                                 placeholder="Full Name"
-                                className="w-full max-w-xs input input-bordered"
+                                className="w-full input input-bordered"
                                 value={formDetails.to}
                                 onChange={(e) =>
                                     setFormDetails({
@@ -227,7 +339,7 @@ export default function SignUp() {
                         <input
                             type="number"
                             placeholder="Max Space"
-                            className="w-full max-w-xs input input-bordered"
+                            className="w-full input input-bordered"
                             value={formDetails.maxSpace}
                             onChange={(e) =>
                                 setFormDetails({
@@ -238,9 +350,9 @@ export default function SignUp() {
                             readOnly={readOnly}
                         />
                         <input
-                            type="text"
+                            type="number"
                             placeholder="Rate Per Hour"
-                            className="w-full max-w-xs input input-bordered"
+                            className="w-full input input-bordered"
                             value={formDetails.ratePerHour}
                             onChange={(e) =>
                                 setFormDetails({
@@ -251,11 +363,14 @@ export default function SignUp() {
                             readOnly={readOnly}
                         />
                     </div>
-                    <a href="#location" className="block w-full">
+                    <div
+                        onClick={() => scrollTo("location")}
+                        className="block w-full"
+                    >
                         <Button className="w-full py-[10px] text-white rounded-lg bg-c3 font-bold">
                             Next
                         </Button>
-                    </a>
+                    </div>
                 </div>
             </div>
 
@@ -270,6 +385,7 @@ export default function SignUp() {
                     latitude={gc?.manageSpace?.latitude}
                     longitude={gc?.manageSpace?.longitude}
                     readOnly={readOnly}
+                    scrollTo={scrollTo}
                 />
             </div>
 
@@ -308,6 +424,7 @@ export default function SignUp() {
                         <Button
                             className="w-full py-[10px] text-white rounded-lg bg-c3 font-bold mt-5"
                             type="submit"
+                            disabled={disableSubmit}
                         >
                             Complete
                         </Button>

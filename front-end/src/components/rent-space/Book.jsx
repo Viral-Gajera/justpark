@@ -20,6 +20,8 @@ import { FaCarAlt } from "react-icons/fa";
 import { FaPhone } from "react-icons/fa6";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 
+import { loadStripe } from "@stripe/stripe-js";
+
 export default function Book() {
     let gc = useContext(GlobalContext);
     let navigate = useNavigate();
@@ -34,13 +36,63 @@ export default function Book() {
     const [markerDetails, setMarkerDetails] = useState({});
     const [center, setCenter] = useState([40.7128, -74.006]);
 
+    function validate() {
+        if (!formDetails.from) {
+            toast.error("From Time is required");
+            return false;
+        }
+        if (!formDetails.to) {
+            toast.error("To Time is required");
+            return false;
+        }
+        let fromtime = Date.parse(formDetails.from);
+        let totime = Date.parse(formDetails.to);
+
+        if (totime <= fromtime) {
+            toast.error("To Time must be greater then From Time");
+            return false;
+        }
+
+        if (!formDetails.vehicleNo) {
+            toast.error("Please enter vehicle Number");
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateTime() {
+        if (!formDetails.from) {
+            toast.error("From Time is required");
+            return false;
+        }
+        if (!formDetails.to) {
+            toast.error("To Time is required");
+            return false;
+        }
+        let fromtime = Date.parse(formDetails.from);
+        let totime = Date.parse(formDetails.to);
+
+        if (totime <= fromtime) {
+            toast.error("To Time must be greater then From Time");
+            return false;
+        }
+
+        return true;
+    }
+
     function verifyDetails() {
         console.log(formDetails);
+        if (!validate()) return;
 
         let a = document.createElement("a");
         a.href = "#map";
         a.click();
     }
+
+    useEffect(() => {
+        getUserLocation();
+    }, []);
 
     useEffect(() => {
         if (mapRef.current) {
@@ -55,7 +107,7 @@ export default function Book() {
 
             markerGroup.current.addTo(map.current);
 
-            if (formDetails.from && formDetails.to) {
+            if (formDetails.from && formDetails.to && validateTime()) {
                 addMarker(center);
             }
 
@@ -122,7 +174,10 @@ export default function Book() {
             to: formDetails.to || "2021-09-02T00:00",
         });
 
-        if (!res?.isSuccess) return;
+        if (!res?.isSuccess) {
+            toast.error(res?.message || "Error fetching marker data");
+            return;
+        }
 
         toast.success("Marker fetched");
 
@@ -153,9 +208,6 @@ export default function Book() {
     }
 
     async function bookTicket() {
-        console.log(markerDetails);
-        console.log(gc?.rentSpace);
-
         let res = await fetchData("POST", "/api/rent-space/book-ticket", {
             providerId: markerDetails?.providerId,
             renterId: gc?.rentSpace?.renterId,
@@ -176,14 +228,15 @@ export default function Book() {
         <section className="scroll-parent">
             {/* Form */}
             <div className="flex items-center justify-center p-20 bg-c1 scroll-child">
-                <div className="flex flex-col items-center justify-center gap-5 [&_input]:w-[350px] bg-white p-5 py-10 rounded-lg">
-                    <h1 className="text-xl font-bold">Enter details</h1>
-                    <div className="grid grid-cols-1 gap-5 ">
-                        <label htmlFor="" className="flex flex-col ">
-                            <div className="mb-1 ml-1">From</div>
+                <div className="flex flex-col items-center justify-center gap-5 [&_input]:w-[250px] md:[&_input]:w-[350px] [&_input]:max-w-[400px] bg-white p-5 py-10 rounded-lg">
+                    <h1 className="text-xl font-bold">Enter Details</h1>
+                    <div className="grid grid-cols-1 gap-5">
+                        <label htmlFor="" className="flex flex-col">
+                            <div className="mb-1 ml-1 font-semibold">
+                                From Time
+                            </div>
                             <input
                                 type="datetime-local"
-                                placeholder="Full Name"
                                 className="w-full input input-bordered"
                                 value={formDetails.from}
                                 onChange={(e) => {
@@ -195,10 +248,11 @@ export default function Book() {
                             />
                         </label>
                         <label htmlFor="" className="flex flex-col">
-                            <div className="mb-1 ml-1">To</div>
+                            <div className="mb-1 ml-1 font-semibold">
+                                To Time
+                            </div>
                             <input
                                 type="datetime-local"
-                                placeholder="Full Name"
                                 className="w-full input input-bordered"
                                 value={formDetails.to}
                                 onChange={(e) => {
@@ -209,7 +263,24 @@ export default function Book() {
                                 }}
                             />
                         </label>
-                        <input
+                        <label htmlFor="" className="flex flex-col">
+                            <div className="mb-1 ml-1 font-semibold">
+                                Vechicle No
+                            </div>
+                            <input
+                                type="text"
+                                className="w-full input input-bordered"
+                                placeholder="Vehicle Number"
+                                value={formDetails.vehicleNo}
+                                onChange={(e) => {
+                                    setFormDetails({
+                                        ...formDetails,
+                                        vehicleNo: e.target.value,
+                                    });
+                                }}
+                            />
+                        </label>
+                        {/* <input
                             type="text"
                             placeholder="Vehicle Number"
                             className="w-full min-w-full input input-bordered"
@@ -220,7 +291,7 @@ export default function Book() {
                                     vehicleNo: e.target.value,
                                 });
                             }}
-                        />
+                        /> */}
                     </div>
 
                     <Button
@@ -264,26 +335,38 @@ export default function Book() {
             <dialog id="marker_modal" className="modal">
                 <div className="w-11/12 max-w-5xl h-[80vh] modal-box overflow-hidden border flex flex-col justify-around">
                     {/* Space Provider Details */}
-                    <div className="flex justify-around text-lg font-semibold">
-                        <div className="flex items-center gap-2">
+                    <div className="flex justify-around py-1 text-lg font-semibold text-white border rounded bg-c3">
+                        <div
+                            className="flex items-center gap-2"
+                            title="Parking ower name"
+                        >
                             <div>
                                 <FaUser />
                             </div>
                             <div>{markerDetails.fullName}</div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div
+                            className="flex items-center gap-2"
+                            title="Parking space name"
+                        >
                             <div>
                                 <FaCarAlt className="text-xl" />
                             </div>
                             <div>{markerDetails.spaceName}</div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div
+                            className="flex items-center gap-2"
+                            title="Parking ower contect number"
+                        >
                             <div>
                                 <FaPhone />
                             </div>
                             <div>{markerDetails.phoneNo}</div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div
+                            className="flex items-center gap-2"
+                            title="Rate per hour"
+                        >
                             <div>
                                 <FaIndianRupeeSign className="-mr-1" />
                             </div>

@@ -21,7 +21,20 @@ app.use(function (req, res, next) {
 
 // Serve static files
 app.use(express.static("public"));
-app.use("/", router);
+
+try {
+    app.use("/", router);
+} catch (e) {
+    console.log(e);
+
+    app.get("/*", (req, res) => {
+        res.json({
+            isSuccess: false,
+            message: "Error in server",
+            data: {},
+        });
+    });
+}
 
 app.listen(8080, function () {
     console.log("App listening on port 8080...");

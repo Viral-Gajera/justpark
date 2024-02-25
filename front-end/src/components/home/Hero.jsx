@@ -5,7 +5,7 @@ import Button from "../form/Button";
 
 export default function Hero() {
     return (
-        <section className="py-16 md:p-16 md:py-24 bg-c1">
+        <section className="px-10 py-20 bg-c1">
             <div className="flex flex-wrap-reverse justify-around gap-20 p-1 bg-cover bg-1">
                 {/* Content */}
                 <div className="text-white w-[500px] flex flex-col justify-evenly gap-10 lg:gap-0">
@@ -21,7 +21,7 @@ export default function Hero() {
                     </p>
 
                     <NavLink to="/rent-space">
-                        <Button className=" w-[50%] mx-auto p-1 bg-c2 font-light">
+                        <Button className="w-full p-1 py-3 mx-auto md:py-2 bg-c2">
                             Find NearBy Parking Space Now
                         </Button>
                     </NavLink>

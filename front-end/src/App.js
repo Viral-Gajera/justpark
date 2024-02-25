@@ -17,6 +17,7 @@ function App() {
                     <Route path="/manage-space/*" element={<ManageSpace />} />
                     <Route path="/rent-space/*" element={<RentSpace />} />
                     <Route path="/admin/*" element={<Admin />} />
+                    <Route path="/*" element={<Home />} />
                 </Routes>
             </GlobalContextComponent>
         </div>

@@ -9,8 +9,8 @@ import { FaInstagram } from "react-icons/fa6";
 export default function Footer() {
     return (
         <footer className="px-10 pt-16 pb-10 text-sm text-white bg-c1">
-            <div className="flex flex-wrap justify-around gap-16 mb-10 ">
-                <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-wrap justify-around gap-16 ">
+                <div className="flex flex-col items-center gap-3">
                     <div className="text-xl font-bold">JustPark</div>
                     <div className="max-w-[300px] text-center">
                         Think you'd make a good fit on our team? Jumpstart your
@@ -40,7 +40,7 @@ export default function Footer() {
                         </NavLink>
                     </div>
                 </div>
-                <div>
+                <div className="text-center md:text-left">
                     <div className="mb-4 font-bold">Useful Links</div>
                     <div className="flex flex-col gap-2">
                         <NavLink to="/">Home</NavLink>
@@ -49,7 +49,7 @@ export default function Footer() {
                         <NavLink to="/admin">Admin</NavLink>
                     </div>
                 </div>
-                <div>
+                <div className="text-center md:text-left">
                     <div className="mb-4 font-bold">Our Services</div>
                     <div className="flex flex-col gap-2">
                         <NavLink to="">Car park management</NavLink>
@@ -57,7 +57,7 @@ export default function Footer() {
                         <NavLink to="">Rent out your EV charger</NavLink>
                     </div>
                 </div>
-                <div>
+                <div className="text-center md:text-left">
                     <div className="mb-4 font-bold">Contact Us</div>
                     <div className="flex flex-col gap-2 mb-4">
                         Aji dem,Rajkot-Morbi Hwy <br /> Rajkot, NY 535022 <br />{" "}
@@ -70,7 +70,7 @@ export default function Footer() {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col items-center ">
+            <div className="flex flex-col items-center mt-20">
                 <div>
                     &copy; Copyright
                     <span className="font-bold"> JustPark</span>. All Rights

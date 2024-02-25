@@ -15,7 +15,7 @@ export default function Images(props) {
                 <img
                     src={`${process.env.REACT_APP_BASEURL}/${props.fileUrls[imageIndex]}`}
                     className="block object-contain h-full mx-auto "
-                    alt=""
+                    alt="Loading..."
                 />
             </div>
             <div className="flex items-center justify-center gap-3 mt-2 overflow-hidden min-h-[40px]">
