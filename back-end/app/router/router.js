@@ -23,6 +23,8 @@ router.post("/api/rent-space/get-marker", rentSpaceController.getMarker);
 router.post("/api/rent-space/book-ticket", rentSpaceController.bookTicket);
 router.post("/api/rent-space/booked", rentSpaceController.booked);
 router.post("/api/rent-space/history", rentSpaceController.history);
+router.post("/create-checkout-session", rentSpaceController.createSession);
+router.post("/web-hook", rentSpaceController.verifyPayment);
 
 
 // Admin

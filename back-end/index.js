@@ -12,6 +12,8 @@ app.use(
         origin: "*",
     })
 );
+
+app.use("/web-hook", express.raw({ type: "application/json" }));
 app.use(express.json());
 app.use(function (req, res, next) {
     console.log(`${counter++}. ${req.method} ${req.url}`);

@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 
 import fetchData from "../../util/fetchData";
 import { GlobalContext } from "../../util/GlobalContextComponent";
@@ -34,12 +35,13 @@ export default function Dashboard() {
     const [totalBokingHours, setTotalBokingHours] = useState(0);
 
     useEffect(() => {
-        if (gc.manageSpace.status != 1) {
-            document.getElementById("status_modal").showModal();
-        }
-
         if (!gc.manageSpace.providerId) {
             navigate("/mange-space");
+            return;
+        }
+
+        if (gc.manageSpace.status != 1) {
+            document.getElementById("status_modal").showModal();
         }
 
         (async function () {

@@ -1,4 +1,5 @@
 let query = require("../model/db.js");
+const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY);
 
 async function login(req, res) {
     let result = await query(
@@ -167,4 +168,79 @@ async function history(req, res) {
     }
 }
 
-module.exports = { addUser, login, getMarker, bookTicket, booked, history };
+async function createSession(req, res) {
+    let from = Date.parse(req?.body?.from);
+    let to = Date.parse(req?.body?.to);
+
+    let hours = Number(((to - from) / (10 * 60 * 60)).toFixed(0));
+    let ratePerHour = req?.body?.ratePerHour;
+
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: [
+            {
+                price_data: {
+                    currency: "INR",
+                    product_data: {
+                        name: "Book Parking Spot",
+                    },
+                    unit_amount: hours * ratePerHour,
+                },
+                quantity: 1,
+            },
+        ],
+        metadata: req.body,
+        mode: "payment",
+        success_url: "http://localhost:3000/",
+        cancel_url: "http://localhost:3000/",
+    });
+
+    res.json({ id: session.id });
+}
+
+async function verifyPayment(req, res) {
+    const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
+
+    const sig = req.headers["stripe-signature"];
+    let event;
+
+    try {
+        event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    } catch (err) {
+        console.log(err);
+        res.status(400).send(`Webhook Error: ${err.message}`);
+        return;
+    }
+
+    if (event.type === "checkout.session.completed") {
+        console.log("Payment was successful!");
+
+        const data = event.data.object.metadata;
+
+        let result = await query(
+            "INSERT INTO rent_details (providerId, renterId, spotIndex, `from`, `to`, vehicleNo) VALUES (?, ?, ?, ?, ?, ?);",
+            [
+                data.providerId,
+                data.renterId,
+                data.spotIndex,
+                data.from,
+                data.to,
+                data.vehicleNo,
+            ]
+        );
+        if (result.affectedRows) {
+            res.send();
+        }
+    }
+}
+
+module.exports = {
+    addUser,
+    login,
+    getMarker,
+    bookTicket,
+    booked,
+    history,
+    createSession,
+    verifyPayment,
+};

@@ -32,7 +32,7 @@ export default function Book() {
     const markerGroup = useRef(L.featureGroup());
 
     const [formDetails, setFormDetails] = useState({});
-    const [input, setInput] = useState();
+    const [input, setInput] = useState("");
     const [markerDetails, setMarkerDetails] = useState({});
     const [center, setCenter] = useState([40.7128, -74.006]);
 
@@ -91,6 +91,11 @@ export default function Book() {
     }
 
     useEffect(() => {
+        if (!gc?.rentSpace?.email && !gc?.rentSpace?.password) {
+            navigate("/");
+            return;
+        }
+
         getUserLocation();
     }, []);
 
@@ -208,6 +213,32 @@ export default function Book() {
     }
 
     async function bookTicket() {
+        if (!validate()) return;
+
+        const stripe = await loadStripe(
+            process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY
+        );
+
+        const session = await fetchData("POST", "/create-checkout-session", {
+            providerId: markerDetails?.providerId,
+            renterId: gc?.rentSpace?.renterId,
+            spotIndex: markerDetails?.availableSpotIndex,
+            from: formDetails?.from,
+            to: formDetails?.to,
+            vehicleNo: formDetails?.vehicleNo,
+            ratePerHour: markerDetails?.ratePerHour,
+        });
+
+        const { error } = await stripe.redirectToCheckout({
+            sessionId: session?.id,
+        });
+
+        if (error) {
+            console.error(error);
+        }
+
+        /*
+
         let res = await fetchData("POST", "/api/rent-space/book-ticket", {
             providerId: markerDetails?.providerId,
             renterId: gc?.rentSpace?.renterId,
@@ -222,6 +253,8 @@ export default function Book() {
         toast.success("Ticket booked");
 
         navigate("/rent-space/dashboard/booked");
+
+        */
     }
 
     return (
