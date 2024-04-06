@@ -8,7 +8,7 @@ export default function Hero() {
         <section className="px-10 py-20 bg-c1">
             <div className="flex flex-wrap-reverse justify-around gap-20 p-1 bg-cover bg-1">
                 {/* Content */}
-                <div className="text-white w-[500px] flex flex-col justify-evenly gap-10 lg:gap-0">
+                <div className="text-white w-[500px] flex flex-col justify-center gap-10">
                     <h1 className="text-5xl font-bold text-center">
                         Find Amazing Parking Spaces Near You
                     </h1>

@@ -19,16 +19,16 @@ export default function SignUp() {
     const [longitude, setLongitude] = useState();
     const [disableSubmit, setDisableSubmit] = useState(false);
 
-    const [readOnly, setReadOnly] = useState(false);
     const [edit, setEdit] = useState(false);
 
-    useEffect(function () {
-        if (searchParams.get("action") == "view") {
-            setReadOnly(true);
-        }
+    let readOnly = false;
 
+    if (searchParams.get("action") == "view") {
+        readOnly = true;
+    }
+
+    useEffect(function () {
         if (searchParams.get("action") == "edit") {
-            setReadOnly(false);
             setEdit(true);
         }
 
@@ -398,16 +398,18 @@ export default function SignUp() {
                     <h1 className="text-xl font-bold">Parking Image</h1>
 
                     <form onSubmit={handlerSubmit}>
-                        <div className="w-full ">
-                            <input
-                                type="file"
-                                placeholder="Full Name"
-                                className="w-full p-2 border border-gray-300 rounded"
-                                multiple
-                                accept="image/*"
-                                readOnly={readOnly}
-                            />
-                        </div>
+                        {!readOnly && (
+                            <div className="w-full ">
+                                <input
+                                    type="file"
+                                    placeholder="Full Name"
+                                    className="w-full p-2 border border-gray-300 rounded"
+                                    multiple
+                                    accept="image/*"
+                                    readOnly={readOnly}
+                                />
+                            </div>
+                        )}
 
                         <div
                             className={`mt-3 w-[70vw] h-[50vh] ${

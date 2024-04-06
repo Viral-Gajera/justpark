@@ -90,7 +90,7 @@ async function addUser(req, res) {
 
 async function rentDetails(req, res) {
     let result = await query(
-        "SELECT * FROM rent_details WHERE providerId = ?",
+        "SELECT * FROM rent_details JOIN space_renter ON rent_details.renterId = space_renter.renterId WHERE providerId = ?",
         [req.body.providerId]
     );
     if (result.length) {

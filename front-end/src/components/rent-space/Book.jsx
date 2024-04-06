@@ -37,6 +37,9 @@ export default function Book() {
     const [center, setCenter] = useState([40.7128, -74.006]);
 
     function validate() {
+        // GJ03HP1234
+        let vehicleNoRegex = /^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$/;
+
         if (!formDetails.from) {
             toast.error("From Time is required");
             return false;
@@ -55,6 +58,11 @@ export default function Book() {
 
         if (!formDetails.vehicleNo) {
             toast.error("Please enter vehicle Number");
+            return false;
+        }
+
+        if (!vehicleNoRegex.test(formDetails.vehicleNo)) {
+            toast.error("Please enter valid vehicle Number");
             return false;
         }
 
@@ -180,11 +188,11 @@ export default function Book() {
         });
 
         if (!res?.isSuccess) {
-            toast.error(res?.message || "Error fetching marker data");
+            toast.error("No parking Location Found");
             return;
         }
 
-        toast.success("Marker fetched");
+        toast.success("Parking Location Found");
 
         console.log(res.data);
 

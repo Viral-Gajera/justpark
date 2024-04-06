@@ -19,7 +19,7 @@ export default function Nav() {
     }
 
     return (
-        <div className="fixed left-0 top-[50%] translate-y-[-50%] bg-c1">
+        <div className="fixed left-0 top-[50%] translate-y-[-50%] bg-c1 z-[100]">
             <div className="flex flex-col gap-6 m-4">
                 {/* Link */}
                 <NavLink className="text-white hover:text-gray-400">

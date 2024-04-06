@@ -25,6 +25,21 @@ let commonAttr = {
     },
 };
 
+function extractTimeFromDate(dateString) {
+    // Parse the input date string
+    const date = new Date(Date.parse(dateString));
+
+    // Extract the time components
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
+
+    // Construct the time string
+    const timeString = `${hours}:${minutes}:${seconds}`;
+
+    return timeString;
+}
+
 export default function Dashboard() {
     const gc = useContext(GlobalContext);
     const navigate = useNavigate();
@@ -32,6 +47,7 @@ export default function Dashboard() {
     const [items, setItems] = useState([]);
     const [groups, setGroups] = useState([{ id: 1, title: "Spot 1" }]);
     const [rentDetails, setRentDetails] = useState([]);
+    const [selectedRentDetail, setSelectedRentDetail] = useState({});
     const [totalBokingHours, setTotalBokingHours] = useState(0);
 
     useEffect(() => {
@@ -66,6 +82,8 @@ export default function Dashboard() {
 
             if (!res?.isSuccess) return;
 
+            console.log(res);
+
             setRentDetails(res?.data);
 
             let itemsTemp = [];
@@ -79,10 +97,14 @@ export default function Dashboard() {
                     title: (
                         <div
                             onClick={() => {
-                                alert("Detail logged into console");
                                 console.log(res?.data[i]);
+                                setSelectedRentDetail(res?.data[i]);
+                                document
+                                    .getElementById("details_modal")
+                                    .showModal();
                             }}
                             title="Vechile No, Click to show more details"
+                            className="text-nowrap overflow-hidden text-ellipsis"
                         >
                             {res?.data[i]?.vehicleNo}
                         </div>
@@ -106,17 +128,25 @@ export default function Dashboard() {
                 });
             }
 
+            console.log(itemsTemp);
+
             setItems(itemsTemp);
         })();
     }, []);
 
     return (
         <section>
+            <style jsx>{`
+                .rct-item {
+                    overflow: hidden;
+                }
+            `}</style>
+
             <section>
                 <Nav />
             </section>
 
-            <section className="mx-[150px] mt-[57px] h-[90vh]">
+            <section className="mx-5 md:mx-[150px] h-[100vh]">
                 <div className="flex flex-col items-center justify-center h-full max-w-full gap-16">
                     <div className="max-w-full p-5 rounded shadow-1">
                         <Timeline
@@ -124,47 +154,49 @@ export default function Dashboard() {
                             items={items}
                             defaultTimeStart={moment().add(-5, "hour")}
                             defaultTimeEnd={moment().add(24, "hour")}
-                            className="max-w-[100%] border"
+                            className="max-w-[100%] border border-gray-400 border-b-0"
                         >
                             <TodayMarker />
                             {/* <CustomMarker date={Date.now()} /> */}
                         </Timeline>
                     </div>
-                    <div className="flex flex-wrap justify-between w-full">
-                        <div className="w-[200px] h-[150px] shadow-1 rounded flex flex-col items-center justify-center gap-2">
-                            <div className="text-xl font-bold">
+                    <div className="flex flex-wrap justify-center w-full gap-[8vw]">
+                        <div className="w-[150px] h-[100px] md:w-[200px] md:h-[130px] shadow-1 rounded flex flex-col items-center justify-center gap-2">
+                            <div className="text-lg font-semibold">
                                 Total Booking
                             </div>
-                            <div className="text-lg font-semibold">
-                                {rentDetails.length}
-                            </div>
+                            <div className="text-lg">{rentDetails.length}</div>
                         </div>
-                        <div className="w-[200px] h-[150px] shadow-1 rounded flex flex-col items-center justify-center gap-2">
-                            <div className="p-2 text-xl font-bold text-center">
-                                Total Booking Hours
+                        <div className="w-[150px] h-[100px] md:w-[200px] md:h-[130px] shadow-1 rounded flex flex-col items-center justify-center gap-1">
+                            <div className="p-0 text-lg font-semibold text-center">
+                                Total Booking <br /> Hours
                             </div>
-                            <div className="text-lg font-semibold">
-                                {totalBokingHours} h
-                            </div>
+                            <div className="text-lg">{totalBokingHours} h</div>
                         </div>
-                        <div className="w-[200px] h-[150px] shadow-1 rounded flex flex-col items-center justify-center gap-2">
-                            <div className="text-xl font-bold">
+                        <div className="w-[150px] h-[100px] md:w-[200px] md:h-[130px] shadow-1 rounded flex flex-col items-center justify-center gap-2">
+                            <div className="text-lg font-semibold">
                                 Rate Per Hour
                             </div>
-                            <div className="text-lg font-semibold">
+                            <div className="text-lg">
                                 {gc?.manageSpace?.ratePerHour}/-
                             </div>
                         </div>
-                        <div className="w-[200px] h-[150px] shadow-1 rounded flex flex-col items-center justify-center gap-2">
-                            <div className="text-xl font-bold">
+                        <div className="w-[150px] h-[100px] md:w-[200px] md:h-[130px] shadow-1 rounded flex flex-col items-center justify-center gap-2">
+                            <div className="text-lg font-semibold">
                                 Total Earning
                             </div>
-                            <div className="text-lg font-semibold">
+                            <div className="text-lg">
                                 {(
                                     totalBokingHours *
-                                    gc?.manageSpace?.ratePerHour
+                                        gc?.manageSpace?.ratePerHour -
+                                    totalBokingHours *
+                                        gc?.manageSpace?.ratePerHour *
+                                        0.1
                                 ).toFixed(2)}
                                 /-
+                            </div>
+                            <div className="text-xs text-center">
+                                * After 10% changed <br /> by platform
                             </div>
                         </div>
                     </div>
@@ -191,6 +223,88 @@ export default function Dashboard() {
                             >
                                 Go to Home
                             </div>
+                        </div>
+                    </div>
+                </dialog>
+            </section>
+
+            <section>
+                <dialog id="details_modal" className="modal">
+                    <div className="modal-box">
+                        <h3 className="text-lg font-bold">
+                            Parking Rentor Details
+                        </h3>
+                        <div className="grid grid-cols-2 gap-5 py-4 font-semibold">
+                            <label htmlFor="" className="">
+                                <span>User Name</span>
+                                <input
+                                    type="text"
+                                    placeholder="Type here"
+                                    className="w-full max-w-xs mt-1 text-gray-500 input input-bordered"
+                                    value={selectedRentDetail?.userName}
+                                    readOnly
+                                />
+                            </label>
+                            <label htmlFor="" className="">
+                                <span>Email</span>
+                                <input
+                                    type="text"
+                                    placeholder="Type here"
+                                    className="w-full max-w-xs mt-1 text-gray-500 input input-bordered"
+                                    value={selectedRentDetail?.email}
+                                    readOnly
+                                />
+                            </label>
+                            <label htmlFor="" className="">
+                                <span>Phone Number</span>
+                                <input
+                                    type="text"
+                                    placeholder="Type here"
+                                    className="w-full max-w-xs mt-1 text-gray-500 input input-bordered"
+                                    value={selectedRentDetail?.phoneNo}
+                                    readOnly
+                                />
+                            </label>
+                            <label htmlFor="" className="">
+                                <span>Vehicle No</span>
+                                <input
+                                    type="text"
+                                    placeholder="Type here"
+                                    className="w-full max-w-xs mt-1 text-gray-500 input input-bordered"
+                                    value={selectedRentDetail?.vehicleNo}
+                                    readOnly
+                                />
+                            </label>
+                            <label htmlFor="" className="">
+                                <span>Time From</span>
+                                <input
+                                    type="text"
+                                    placeholder="Type here"
+                                    className="w-full max-w-xs mt-1 text-gray-500 input input-bordered"
+                                    value={extractTimeFromDate(
+                                        selectedRentDetail?.from
+                                    )}
+                                    readOnly
+                                />
+                            </label>
+                            <label htmlFor="" className="">
+                                <span>Time To</span>
+                                <input
+                                    type="text"
+                                    placeholder="Type here"
+                                    className="w-full max-w-xs mt-1 text-gray-500 input input-bordered"
+                                    value={extractTimeFromDate(
+                                        selectedRentDetail?.to
+                                    )}
+                                    readOnly
+                                />
+                            </label>
+                        </div>
+                        <div className="modal-action">
+                            <form method="dialog">
+                                {/* if there is a button, it will close the modal */}
+                                <button className="btn">Close</button>
+                            </form>
                         </div>
                     </div>
                 </dialog>

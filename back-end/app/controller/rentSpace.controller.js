@@ -191,8 +191,8 @@ async function createSession(req, res) {
         ],
         metadata: req.body,
         mode: "payment",
-        success_url: "http://localhost:3000/",
-        cancel_url: "http://localhost:3000/",
+        success_url: "http://localhost:3000?status=1",
+        cancel_url: "http://localhost:3000?status=0",
     });
 
     res.json({ id: session.id });
