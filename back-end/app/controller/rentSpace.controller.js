@@ -1,6 +1,11 @@
 let query = require("../model/db.js");
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY);
 
+const fs = require("fs");
+const ejs = require("ejs");
+const path = require("path");
+const nodemailer = require("nodemailer");
+
 async function login(req, res) {
     let result = await query(
         "SELECT * FROM space_renter WHERE email = ? AND password = ?",
@@ -215,7 +220,14 @@ async function verifyPayment(req, res) {
     if (event.type === "checkout.session.completed") {
         console.log("Payment was successful!");
 
+        // mail();
+
         const data = event.data.object.metadata;
+
+        mail(
+            event.data.object.customer_details.email,
+            event.data.object.amount_subtotal / 100
+        );
 
         let result = await query(
             "INSERT INTO rent_details (providerId, renterId, spotIndex, `from`, `to`, vehicleNo) VALUES (?, ?, ?, ?, ?, ?);",
@@ -232,6 +244,45 @@ async function verifyPayment(req, res) {
             res.send();
         }
     }
+}
+
+function mail(to = "viral.gajera218@gmail.com", amount = 0.0) {
+    // Read the content of index.html
+    const htmlTemplate = fs.readFileSync(
+        path.join(__dirname, "../mail/index.html"),
+        "utf-8"
+    );
+
+    // Render the HTML content with EJS
+    const renderedHtml = ejs.render(htmlTemplate, { paymentAmount: amount });
+
+    const transporter = nodemailer.createTransport({
+        service: "gmail",
+        host: "smtp.gmail.com",
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD,
+        },
+    });
+
+    const mailOptions = {
+        from: {
+            name: "Team JustPark",
+            address: process.env.EMAIL_USER,
+        },
+        to,
+        subject: "JustPark - Booking Confirmation",
+        // text: "Hello world?",
+        html: renderedHtml,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error("Error sending email:", error);
+        } else {
+            console.log("Email sent:", info.response);
+        }
+    });
 }
 
 module.exports = {
