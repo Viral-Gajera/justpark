@@ -23,26 +23,59 @@ async function login(req, res) {
 }
 
 async function addUser(req, res) {
+    let rentDetails;
     if (req.body.edit) {
-        // Check if space is already booked
-        // Do not allow to edit if space is already booked
+        // get rent details
+        // rentDetails = await query(
+        //     "SELECT * FROM rent_details WHERE providerId = ?",
+        //     [req.body.providerId]
+        // );
 
-        // code here
+        // let result = await query(
+        //     "DELETE FROM space_provider WHERE providerId = ?",
+        //     [req.body.providerId]
+        // );
 
-        // end
+        // if (!result.affectedRows) {
+        //     res.json({
+        //         isSuccess: false,
+        //         message: "Something went wrong",
+        //         data: {},
+        //     });
+        // }
 
+        // Update table with new data
         let result = await query(
-            "DELETE FROM space_provider WHERE providerId = ?",
-            [req.body.providerId]
+            "UPDATE space_provider SET fullName = ?, spaceName = ?, email = ?, password = ?, phoneNo = ?, latitude = ?, longitude = ?, `from` = ?, `to` = ?, maxSpace = ?, ratePerHour = ?, fileUrls = ?, status = ? WHERE providerId = ?",
+            [
+                req.body.fullName,
+                req.body.spaceName,
+                req.body.email,
+                req.body.password,
+                Number(req.body.phoneNo),
+                req.body.latitude,
+                req.body.longitude,
+                req.body.from,
+                req.body.to,
+                Number(req.body.maxSpace),
+                Number(req.body.ratePerHour),
+                JSON.stringify(req.body.fileUrls),
+                0,
+                req.body.providerId,
+            ]
         );
 
-        if (!result.affectedRows) {
+        if (result.affectedRows) {
             res.json({
-                isSuccess: false,
-                message: "Something went wrong",
-                data: {},
+                isSuccess: true,
+                message: "Account updated successfully",
+                data: {
+                    providerId: req.body.providerId,
+                    ...req.body,
+                },
             });
         }
+        return;
     }
 
     const existingUser = await query(
@@ -76,6 +109,25 @@ async function addUser(req, res) {
             0,
         ]
     );
+
+    // if (req.body.edit) {
+    //     // update rent details with new providerId
+    //     for (let i = 0; i < rentDetails.length; i++) {
+    //         await query(
+    //             "INSERT INTO rent_details (providerId, renterId, spaceId, fromTime, toTime, date, status) VALUES (?, ?, ?, ?, ?, ?, ?);",
+    //             [
+    //                 result.insertId,
+    //                 rentDetails[i].renterId,
+    //                 rentDetails[i].spaceId,
+    //                 rentDetails[i].fromTime,
+    //                 rentDetails[i].toTime,
+    //                 rentDetails[i].date,
+    //                 rentDetails[i].status,
+    //             ]
+    //         );
+    //     }
+    // }
+
     if (result.affectedRows) {
         res.json({
             isSuccess: true,

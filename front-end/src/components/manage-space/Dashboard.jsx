@@ -104,7 +104,7 @@ export default function Dashboard() {
                                     .showModal();
                             }}
                             title="Vechile No, Click to show more details"
-                            className="text-nowrap overflow-hidden text-ellipsis"
+                            className="overflow-hidden text-nowrap text-ellipsis"
                         >
                             {res?.data[i]?.vehicleNo}
                         </div>
@@ -136,7 +136,7 @@ export default function Dashboard() {
 
     return (
         <section>
-            <style jsx>{`
+            <style>{`
                 .rct-item {
                     overflow: hidden;
                 }
@@ -146,8 +146,8 @@ export default function Dashboard() {
                 <Nav />
             </section>
 
-            <section className="mx-5 md:mx-[150px] h-[100vh]">
-                <div className="flex flex-col items-center justify-center h-full max-w-full gap-16">
+            <section className="mx-auto p-1 mt-[80px] w-[85vw] h-[calc(100vh-80px)] overflow-y-auto">
+                <div className="flex flex-col items-center justify-center h-full max-w-full gap-16 min-h-[620px]">
                     <div className="max-w-full p-5 rounded shadow-1">
                         <Timeline
                             groups={groups}

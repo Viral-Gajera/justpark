@@ -193,7 +193,7 @@ export default function SignUp() {
         }
 
         if (!res?.isSuccess) {
-            if (res.message === "duplicate_email") {
+            if (res?.message === "duplicate_email") {
                 toast.error(
                     "Email already exists. Please try with another email address.",
                     {
